@@ -2,4 +2,6 @@
 
 My solutions to the 2015 edition of Advent of Code.
 
-Please see adventofcode.com if your'e interested in the puzzles.
+Please see [adventofcode.com](adventofcode.com) if you're interested in
+the puzzles.
+
