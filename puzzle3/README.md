@@ -14,7 +14,7 @@ than once. How many houses receive at least one present?
 
 For example:
 
-&lt; delivers presents to 2 houses: one at the starting location, and one to the
+&lt;&lt; delivers presents to 2 houses: one at the starting location, and one to the
 east.
 
 ^>v< delivers presents to 4 houses in a square, including twice to the
