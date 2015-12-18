@@ -31,7 +31,7 @@ class Grid(object):
         result = ''
         for row in self.grid:
             row_str = [self.str_rep[i] for i in row]
-            result += " ".join(row_str) + "\n"
+            result += "".join(row_str) + "\n"
         return result
 
     def __eq__(self, other_grid):
@@ -123,9 +123,18 @@ class Grid(object):
                 future_grid.append(future_row)
             self.grid = future_grid
 
+def read_data():
+    """Read data from input file."""
+    with open('../input.txt', 'r') as input_file:
+        data = input_file.read().strip()
+    return data
+
 def main():
     """Main program."""
-    pass
+    grid = Grid(0, 0)
+    grid.from_string(read_data())
+    grid.tick(100)
+    print "There are", grid.count_lights_on(), "after 100 steps."
 
 if __name__ == '__main__':
     main()
