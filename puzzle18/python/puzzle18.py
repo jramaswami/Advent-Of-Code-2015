@@ -108,8 +108,12 @@ class Grid(object):
             else:
                 return 0
 
+    def count_lights_on(self):
+        """Returns a count of the lights that are on."""
+        return sum([sum(row) for row in self.grid])
+
     def tick(self, tick_count=1):
-        """Execute the given number of rounds of the game of life."""
+        """Execute the given number of round of the game of life."""
         for dummy_index in range(tick_count):
             future_grid = []
             for row in range(self.height):
@@ -121,8 +125,7 @@ class Grid(object):
 
 def main():
     """Main program."""
-    grid = Grid(4, 4)
-    print grid
+    pass
 
 if __name__ == '__main__':
     main()
