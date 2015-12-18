@@ -9,7 +9,6 @@ class Grid(object):
         self.str_rep = ['.', '#']
         self.str_dct = {'.' : 0, '#': 1}
         self.init_grid()
-        self.future = []
 
     def init_grid(self):
         """
@@ -18,14 +17,6 @@ class Grid(object):
         """
         for dummy_index in range(self.height):
             self.grid.append([0] * self.width)
-
-    def init_future(self):
-        """
-        Intitializes an empty grid of size
-        self.height x self.width.
-        """
-        for dummy_index in range(self.height):
-            self.future.append([0] * self.width)
 
     def __str__(self):
         result = ''
