@@ -108,15 +108,16 @@ class Grid(object):
             else:
                 return 0
 
-    def tick(self):
-        """Execute one round of the game of life."""
-        future_grid = []
-        for row in range(self.height):
-            future_row = []
-            for col in range(self.width):
-                future_row.append(self.get_future_state(row, col))
-            future_grid.append(future_row)
-        self.grid = future_grid
+    def tick(self, tick_count=1):
+        """Execute the given number of rounds of the game of life."""
+        for dummy_index in range(tick_count):
+            future_grid = []
+            for row in range(self.height):
+                future_row = []
+                for col in range(self.width):
+                    future_row.append(self.get_future_state(row, col))
+                future_grid.append(future_row)
+            self.grid = future_grid
 
 def main():
     """Main program."""
