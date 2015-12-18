@@ -37,38 +37,37 @@ class Grid(object):
         # up and left
         row_n, col_n = row - 1, col - 1
         if row_n > 0 and col_n > 0:
-            moore_n.append(self.grid[row_n][col_n])
+            moore_n.append((row_n, col_n))
         # up
         row_n, col_n = row - 1, col + 0
         if row_n > 0:
-            moore_n.append(self.grid[row_n][col_n])
+            moore_n.append((row_n, col_n))
         # up and right
         row_n, col_n = row - 1, col + 1
         if row_n > 0 and col_n < self.width:
-            moore_n.append(self.grid[row_n][col_n])
+            moore_n.append((row_n, col_n))
         # right
         row_n, col_n = row + 0, col + 1
         if col_n < self.width:
-            moore_n.append(self.grid[row_n][col_n])
+            moore_n.append((row_n, col_n))
         # down and right
         row_n, col_n = row + 1, col + 1
         if row_n < self.height and col_n < self.width:
-            moore_n.append(self.grid[row_n][col_n])
+            moore_n.append((row_n, col_n))
         # down
         row_n, col_n = row + 1, col + 0
         if row_n < self.height:
-            moore_n.append(self.grid[row_n][col_n])
+            moore_n.append((row_n, col_n))
         # down and left
         row_n, col_n = row + 1, col - 1
         if row_n < self.height and col_n > 0:
-            moore_n.append(self.grid[row_n][col_n])
+            moore_n.append((row_n, col_n))
         # left
         row_n, col_n = row + 0, col - 1
         if col_n > 0:
-            moore_n.append(self.grid[row_n][col_n])
+            moore_n.append((row_n, col_n))
 
         return moore_n
-
 
     def __str__(self):
         result = ''
