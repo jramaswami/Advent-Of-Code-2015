@@ -86,5 +86,20 @@ class TestPuzzle18(unittest.TestCase):
         grid.tick(4)
         self.assertEquals(grid, expected_4)
 
+    def test_count_lights_on(self):
+        """Tests for Grid.count_lights_on()"""
+        grid_string_0 = ".#.#.#\n...##.\n#....#\n..#...\n#.#..#\n####.."
+        grid = p18.Grid(0, 0)
+        grid.from_string(grid_string_0)
+        self.assertEquals(15, grid.count_lights_on())
+        grid.tick()
+        self.assertEquals(11, grid.count_lights_on())
+        grid.tick()
+        self.assertEquals(8, grid.count_lights_on())
+        grid.tick()
+        self.assertEquals(4, grid.count_lights_on())
+        grid.tick()
+        self.assertEquals(4, grid.count_lights_on())
+
 if __name__ == '__main__':
     unittest.main()
