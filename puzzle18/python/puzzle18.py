@@ -2,12 +2,14 @@
 
 class Grid(object):
     """Class to represent the grid."""
-    def __init__(self, height, width):
+    def __init__(self, height, width, broken_corner_lights=False):
         self.height = height
         self.width = width
-        self.grid = []
+        self.broken_corner_lights = broken_corner_lights
         self.str_rep = ['.', '#']
         self.str_dct = {'.' : 0, '#': 1}
+
+        self.grid = []
         self.init_grid()
 
     def init_grid(self):
@@ -17,6 +19,12 @@ class Grid(object):
         """
         for dummy_index in range(self.height):
             self.grid.append([0] * self.width)
+
+        # for part two of the puzzle
+        # the 4 lights in the corner are
+        # always on
+        if self.broken_corner_lights:
+            self.turn_on_corner_lights()
 
     def __str__(self):
         result = ''
@@ -36,6 +44,8 @@ class Grid(object):
         self.grid = []
         for row_s in row_strings:
             self.grid.append([self.str_dct[c] for c in row_s])
+        if self.broken_corner_lights:
+            self.turn_on_corner_lights()
 
     def get_offset_coords(self, row, col, row_off, col_off):
         """
@@ -113,6 +123,21 @@ class Grid(object):
                     future_row.append(self.get_future_state(row, col))
                 future_grid.append(future_row)
             self.grid = future_grid
+
+            if self.broken_corner_lights:
+                self.turn_on_corner_lights()
+
+    def turn_on_corner_lights(self):
+        """Turn the lights in the four corners on."""
+        # for part two of the puzzle
+        # the 4 lights in the corner are
+        # always on
+        if not self.grid == []:
+            self.grid[0][0] = 1
+            self.grid[0][-1] = 1
+            self.grid[-1][-1] = 1
+            self.grid[-1][0] = 1
+
 
 def read_data():
     """Read data from input file."""

@@ -101,5 +101,46 @@ class TestPuzzle18(unittest.TestCase):
         grid.tick()
         self.assertEquals(4, grid.count_lights_on())
 
+    def test_broken_corner_lights(self):
+        """Tests for part 2; lights in the corners are always on"""
+        grid = p18.Grid(3, 3, broken_corner_lights=True)
+        self.assertEquals(4, grid.count_lights_on())
+        expected = p18.Grid(3, 3, broken_corner_lights=True)
+        expected.from_string("#.#\n...\n#.#")
+        self.assertEquals(grid, expected)
+
+        # expected
+        grid_string_1 = "#.##.#\n####.#\n...##.\n......\n#...#.\n#.####"
+        expected_1 = p18.Grid(0, 0, broken_corner_lights=True)
+        expected_1.from_string(grid_string_1)
+        grid_string_2 = "#..#.#\n#....#\n.#.##.\n...##.\n.#..##\n##.###"
+        expected_2 = p18.Grid(0, 0, broken_corner_lights=True)
+        expected_2.from_string(grid_string_2)
+        grid_string_3 = "#...##\n####.#\n..##.#\n......\n##....\n####.#"
+        expected_3 = p18.Grid(0, 0, broken_corner_lights=True)
+        expected_3.from_string(grid_string_3)
+        grid_string_4 = "#.####\n#....#\n...#..\n.##...\n#.....\n#.#..#"
+        expected_4 = p18.Grid(0, 0, broken_corner_lights=True)
+        expected_4.from_string(grid_string_4)
+        grid_string_5 = "##.###\n.##..#\n.##...\n.##...\n#.#...\n##...#"
+        expected_5 = p18.Grid(0, 0, broken_corner_lights=True)
+        expected_5.from_string(grid_string_5)
+
+        grid_string_0 = "##.#.#\n...##.\n#....#\n..#...\n#.#..#\n####.#"
+        grid = p18.Grid(0, 0, broken_corner_lights=True)
+        grid.from_string(grid_string_0)
+
+        grid.tick()
+        self.assertEquals(grid, expected_1)
+        grid.tick()
+        self.assertEquals(grid, expected_2)
+        grid.tick()
+        self.assertEquals(grid, expected_3)
+        grid.tick()
+        self.assertEquals(grid, expected_4)
+        grid.tick()
+        self.assertEquals(grid, expected_5)
+        self.assertEquals(17, grid.count_lights_on())
+
 if __name__ == '__main__':
     unittest.main()
