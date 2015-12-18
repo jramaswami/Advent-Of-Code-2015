@@ -27,6 +27,20 @@ class Grid(object):
         for dummy_index in range(self.height):
             self.future.append([0] * self.width)
 
+    def get_offset_coords(self, row, col, row_off, col_off):
+        """
+        If the cell is in the grid, returns the
+        coordinates of the cell.  If the cell
+        is not on the grid, returns None.
+        """
+        row_d = row + row_off
+        col_d = col + col_off
+        if row_d >= 0 and row_d < self.height \
+        and col_d >= 0 and col_d < self.height:
+            return (row_d, col_d)
+        else:
+            return None
+
     def moore_neighborhood(self, row, col):
         """
         Returns a list of the states of the
@@ -34,38 +48,13 @@ class Grid(object):
         the cell at [row, col].
         """
         moore_n = []
-        # up and left
-        row_n, col_n = row - 1, col - 1
-        if row_n > 0 and col_n > 0:
-            moore_n.append((row_n, col_n))
-        # up
-        row_n, col_n = row - 1, col + 0
-        if row_n > 0:
-            moore_n.append((row_n, col_n))
-        # up and right
-        row_n, col_n = row - 1, col + 1
-        if row_n > 0 and col_n < self.width:
-            moore_n.append((row_n, col_n))
-        # right
-        row_n, col_n = row + 0, col + 1
-        if col_n < self.width:
-            moore_n.append((row_n, col_n))
-        # down and right
-        row_n, col_n = row + 1, col + 1
-        if row_n < self.height and col_n < self.width:
-            moore_n.append((row_n, col_n))
-        # down
-        row_n, col_n = row + 1, col + 0
-        if row_n < self.height:
-            moore_n.append((row_n, col_n))
-        # down and left
-        row_n, col_n = row + 1, col - 1
-        if row_n < self.height and col_n > 0:
-            moore_n.append((row_n, col_n))
-        # left
-        row_n, col_n = row + 0, col - 1
-        if col_n > 0:
-            moore_n.append((row_n, col_n))
+        offsets = [(-1, -1), (-1, 0), (-1, 1), (0, 1),
+                   (1, 1), (1, 0), (1, -1), (0, -1)]
+
+        for off in offsets:
+            neighbor = self.get_offset_coords(row, col, off[0], off[1])
+            if neighbor != None:
+                moore_n.append(neighbor)
 
         return moore_n
 
