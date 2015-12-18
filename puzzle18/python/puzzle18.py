@@ -147,10 +147,17 @@ def read_data():
 
 def main():
     """Main program."""
+    grid_string_0 = read_data()
     grid = Grid(0, 0)
-    grid.from_string(read_data())
+    grid.from_string(grid_string_0)
     grid.tick(100)
     print "There are", grid.count_lights_on(), "after 100 steps."
+
+    grid = Grid(0, 0, broken_corner_lights=True)
+    grid.from_string(grid_string_0)
+    grid.tick(100)
+    print "There are", grid.count_lights_on(), \
+          "after 100 steps if the corner lights are broken."
 
 if __name__ == '__main__':
     main()
