@@ -20,9 +20,16 @@ class TestPuzzle18(unittest.TestCase):
 
     def test_moore_neighborhood(self):
         """Tests for Grid.moore_neighborhood"""
-        grid = p18.Grid(10, 10)
+        grid = p18.Grid(4, 4)
         expected = [(0, 1), (1, 1), (1, 0)]
         self.assertEquals(grid.moore_neighborhood(0, 0), expected)
+
+        expected = [(0, 1), (0, 2), (0, 3), (1, 3),
+                    (2, 3), (2, 2), (2, 1), (1, 1)]
+        self.assertEquals(grid.moore_neighborhood(1, 2), expected)
+
+        expected = [(2, 0), (2, 1), (2, 2), (3, 2), (3, 0)]
+        self.assertEquals(grid.moore_neighborhood(3, 1), expected)
 
 if __name__ == '__main__':
     unittest.main()
