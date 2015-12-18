@@ -34,6 +34,9 @@ class Grid(object):
             result += " ".join(row_str) + "\n"
         return result
 
+    def __eq__(self, other_grid):
+        return self.grid == other_grid.grid
+
     def from_string(self, grid_string):
         """Loads grid from string."""
         row_strings = grid_string.split("\n")
@@ -104,6 +107,16 @@ class Grid(object):
                 return 1
             else:
                 return 0
+
+    def tick(self):
+        """Execute one round of the game of life."""
+        future_grid = []
+        for row in range(self.height):
+            future_row = []
+            for col in range(self.width):
+                future_row.append(self.get_future_state(row, col))
+            future_grid.append(future_row)
+        self.grid = future_grid
 
 def main():
     """Main program."""

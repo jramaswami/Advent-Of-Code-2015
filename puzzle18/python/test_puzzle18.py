@@ -51,5 +51,31 @@ class TestPuzzle18(unittest.TestCase):
         self.assertEquals(0, grid.get_future_state(3, 3))
         self.assertEquals(1, grid.get_future_state(2, 2))
 
+    def test_tick(self):
+        """Tests for Grid.tick()"""
+        grid = p18.Grid(0, 0)
+        grid_string_0 = ".#.#.#\n...##.\n#....#\n..#...\n#.#..#\n####.."
+        grid_string_1 = "..##..\n..##.#\n...##.\n......\n#.....\n#.##.."
+        grid_string_2 = "..###.\n......\n..###.\n......\n.#....\n.#...."
+        grid_string_3 = "...#..\n......\n...#..\n..##..\n......\n......"
+        grid_string_4 = "......\n......\n..##..\n..##..\n......\n......"
+        grid.from_string(grid_string_0)
+        grid.tick()
+        expected = p18.Grid(0, 0)
+        expected.from_string(grid_string_1)
+        self.assertEquals(grid, expected)
+        expected = p18.Grid(0, 0)
+        expected.from_string(grid_string_2)
+        grid.tick()
+        self.assertEquals(grid, expected)
+        expected = p18.Grid(0, 0)
+        expected.from_string(grid_string_3)
+        grid.tick()
+        self.assertEquals(grid, expected)
+        expected = p18.Grid(0, 0)
+        expected.from_string(grid_string_4)
+        grid.tick()
+        self.assertEquals(grid, expected)
+
 if __name__ == '__main__':
     unittest.main()
