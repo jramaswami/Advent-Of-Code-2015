@@ -27,6 +27,22 @@ class Grid(object):
         for dummy_index in range(self.height):
             self.future.append([0] * self.width)
 
+    def __str__(self):
+        result = ''
+        for row in self.grid:
+            row_str = [self.str_rep[i] for i in row]
+            result += " ".join(row_str) + "\n"
+        return result
+
+    def from_string(self, grid_string):
+        """Loads grid from string."""
+        row_strings = grid_string.split("\n")
+        self.height = len(row_strings)
+        self.width = len(row_strings[0])
+        self.grid = []
+        for row_s in row_strings:
+            self.grid.append([self.str_dct[c] for c in row_s])
+
     def get_offset_coords(self, row, col, row_off, col_off):
         """
         If the cell is in the grid, returns the
@@ -64,21 +80,30 @@ class Grid(object):
         result = sum([self.grid[n[0]][n[1]] for n in moore_n])
         return result
 
-    def __str__(self):
-        result = ''
-        for row in self.grid:
-            row_str = [self.str_rep[i] for i in row]
-            result += " ".join(row_str) + "\n"
-        return result
+    def get_future_state(self, row, col):
+        """Returns the future state for a given cell."""
 
-    def from_string(self, grid_string):
-        """Loads grid from string."""
-        row_strings = grid_string.split("\n")
-        self.height = len(row_strings)
-        self.width = len(row_strings[0])
-        self.grid = []
-        for row_s in row_strings:
-            self.grid.append([self.str_dct[c] for c in row_s])
+        # The state a light should have next is based on its
+        # current state (on or off) plus the number of neighbors
+        # that are on:
+        #
+        #   A light which is on stays on when 2 or 3 neighbors
+        #   are on, and turns off otherwise.
+        #
+        #   A light which is off turns on if exactly 3 neighbors are
+        #   on, and stays off otherwise.
+
+        neighbors_on = self.count_neighbors_on(row, col)
+        if self.grid[row][col] == 1:
+            if neighbors_on == 2 or neighbors_on == 3:
+                return 1
+            else:
+                return 0
+        else:
+            if neighbors_on == 3:
+                return 1
+            else:
+                return 0
 
 def main():
     """Main program."""

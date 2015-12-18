@@ -41,5 +41,15 @@ class TestPuzzle18(unittest.TestCase):
         self.assertEquals(0, grid.count_neighbors_on(3, 3))
         self.assertEquals(4, grid.count_neighbors_on(2, 1))
 
+    def test_get_future_state(self):
+        """Tests for Grid.get_future_state()"""
+        grid = p18.Grid(4, 4)
+        grid_string = "##..\n..#.\n#...\n##.#"
+        grid.from_string(grid_string)
+        self.assertEquals(0, grid.get_future_state(0, 0))
+        self.assertEquals(1, grid.get_future_state(3, 0))
+        self.assertEquals(0, grid.get_future_state(3, 3))
+        self.assertEquals(1, grid.get_future_state(2, 2))
+
 if __name__ == '__main__':
     unittest.main()
