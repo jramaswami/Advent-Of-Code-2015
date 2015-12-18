@@ -53,29 +53,38 @@ class TestPuzzle18(unittest.TestCase):
 
     def test_tick(self):
         """Tests for Grid.tick()"""
-        grid = p18.Grid(0, 0)
+        # test grids
         grid_string_0 = ".#.#.#\n...##.\n#....#\n..#...\n#.#..#\n####.."
         grid_string_1 = "..##..\n..##.#\n...##.\n......\n#.....\n#.##.."
+        expected_1 = p18.Grid(0, 0)
+        expected_1.from_string(grid_string_1)
         grid_string_2 = "..###.\n......\n..###.\n......\n.#....\n.#...."
+        expected_2 = p18.Grid(0, 0)
+        expected_2.from_string(grid_string_2)
         grid_string_3 = "...#..\n......\n...#..\n..##..\n......\n......"
+        expected_3 = p18.Grid(0, 0)
+        expected_3.from_string(grid_string_3)
         grid_string_4 = "......\n......\n..##..\n..##..\n......\n......"
+        expected_4 = p18.Grid(0, 0)
+        expected_4.from_string(grid_string_4)
+
+        # test successive ticks against test grids
+        grid = p18.Grid(0, 0)
         grid.from_string(grid_string_0)
         grid.tick()
-        expected = p18.Grid(0, 0)
-        expected.from_string(grid_string_1)
-        self.assertEquals(grid, expected)
-        expected = p18.Grid(0, 0)
-        expected.from_string(grid_string_2)
+        self.assertEquals(grid, expected_1)
         grid.tick()
-        self.assertEquals(grid, expected)
-        expected = p18.Grid(0, 0)
-        expected.from_string(grid_string_3)
+        self.assertEquals(grid, expected_2)
         grid.tick()
-        self.assertEquals(grid, expected)
-        expected = p18.Grid(0, 0)
-        expected.from_string(grid_string_4)
+        self.assertEquals(grid, expected_3)
         grid.tick()
-        self.assertEquals(grid, expected)
+        self.assertEquals(grid, expected_4)
+
+        # test specifying number of ticks
+        grid = p18.Grid(0, 0)
+        grid.from_string(grid_string_0)
+        grid.tick(4)
+        self.assertEquals(grid, expected_4)
 
 if __name__ == '__main__':
     unittest.main()
