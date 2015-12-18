@@ -58,6 +58,12 @@ class Grid(object):
 
         return moore_n
 
+    def count_neighbors_on(self, row, col):
+        """Returns the number of neighbors that are on."""
+        moore_n = self.moore_neighborhood(row, col)
+        result = sum([self.grid[n[0]][n[1]] for n in moore_n])
+        return result
+
     def __str__(self):
         result = ''
         for row in self.grid:
