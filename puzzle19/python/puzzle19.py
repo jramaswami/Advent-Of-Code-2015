@@ -1,5 +1,7 @@
 """Day 19 Puzzle"""
 
+import collections
+
 def transform_molecule(molecule, atomic_transformations):
     """
     Returns a Set of possible transformations
@@ -28,9 +30,29 @@ def transform_molecule(molecule, atomic_transformations):
 
     return set(transformations)
 
+def read_data():
+    """
+    Reads data file and returns molecule as string and
+    dictionary of transformations.
+    """
+    with open('../input.txt', 'r') as input_file:
+        lines = input_file.readlines()
+
+    molecule = lines[-1].strip()
+    transformations = collections.defaultdict(list)
+    for line in lines[:-2]:
+        line = line.strip()
+        atom, transformation = line.split(' => ')
+        transformations[atom].append(transformation)
+
+    return molecule, transformations
+
 def main():
     """Main application."""
-    pass
+    molecule, transformations = read_data()
+    new_molecules = transform_molecule(molecule, transformations)
+    print 'There are', len(new_molecules), 'different molecules', \
+          'produced by one transformation.'
 
 if __name__ == '__main__':
     main()
