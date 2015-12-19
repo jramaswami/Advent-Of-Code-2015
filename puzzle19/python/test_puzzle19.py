@@ -22,8 +22,32 @@ class TestPuzzle19(unittest.TestCase):
 
         transformations = {'Ti': ['BP', 'TiTi'], 'e': ['HF', 'NAl', 'OMg']}
         new_molecules = p19.transform_molecule('TieTi', transformations)
-        print new_molecules
         self.assertEquals(7, len(new_molecules))
+
+    def test_steps_to_build_molecule(self):
+        """Tests for steps_to_build_molecule()"""
+        transformations = {'e': ['H', 'O'], 'H': ['HO', 'OH'], 'O': ['HH']}
+        self.assertEquals(3, p19.steps_to_build_molecule('HOH', \
+                                                         transformations))
+        self.assertEquals(6, p19.steps_to_build_molecule('HOHOHO', \
+                                                         transformations))
+
+    def test_reverse_transformations(self):
+        """Tests for reverse_transformations()"""
+        transformations = {'e': ['H', 'O'], 'H': ['HO', 'OH'], 'O': ['HH']}
+        reverse = p19.reverse_transformations(transformations)
+        self.assertIn('e', reverse['H'])
+        self.assertIn('e', reverse['O'])
+        self.assertIn('H', reverse['HO'])
+        self.assertIn('H', reverse['OH'])
+        self.assertIn('O', reverse['HH'])
+
+    def test_steps_reverse_molecule(self):
+        """Tests for reverse_engineer_molecule()"""
+        transformations = {'e': ['H', 'O'], 'H': ['HO', 'OH'], 'O': ['HH']}
+        reverse = p19.reverse_transformations(transformations)
+        self.assertEquals(3, p19.steps_to_reverse_molecule('HOH', reverse))
+        self.assertEquals(6, p19.steps_to_reverse_molecule('HOHOHO', reverse))
 
 if __name__ == '__main__':
     unittest.main()
