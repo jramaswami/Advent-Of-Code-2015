@@ -41,4 +41,5 @@ presents as the number in your puzzle input?
 
 Your puzzle input is ```34000000```.
 
+Your puzzle answer was 786240.
 
