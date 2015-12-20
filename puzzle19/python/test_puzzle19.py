@@ -49,5 +49,18 @@ class TestPuzzle19(unittest.TestCase):
         self.assertEquals(3, p19.steps_to_reverse_molecule('HOH', reverse))
         self.assertEquals(6, p19.steps_to_reverse_molecule('HOHOHO', reverse))
 
+    def test_random_choice(self):
+        """Tests for trials()"""
+        transformations = {'e': ['H', 'O'], 'H': ['HO', 'OH'], 'O': ['HH']}
+        self.assertEquals(3, p19.trials('HOH', transformations))
+        self.assertEquals(6, p19.trials('HOHOHO', transformations))
+
+    def test_greedy_reversal(self):
+        """Tests for greedy_reversal()"""
+        transformations = {'e': ['H', 'O'], 'H': ['HO', 'OH'], 'O': ['HH']}
+        reverse = p19.reverse_transformations(transformations)
+        self.assertEquals(3, p19.greedy_reversal('HOH', reverse))
+        self.assertEquals(6, p19.greedy_reversal('HOHOHO', reverse))
+
 if __name__ == '__main__':
     unittest.main()

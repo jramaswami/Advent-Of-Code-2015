@@ -1,6 +1,9 @@
 """Day 19 Puzzle"""
 
+from __future__ import print_function
+
 import collections
+import random
 
 def transform_molecule(molecule, atomic_transformations):
     """
@@ -47,7 +50,7 @@ def read_data():
 
     return molecule, transformations
 
-def steps_to_build_molecule(target_molecule, transformations, limit=15):
+def steps_to_build_molecule(target_molecule, transformations, limit=100):
     """
     Returns the minimum number of steps to
     build target molecule.
@@ -55,9 +58,10 @@ def steps_to_build_molecule(target_molecule, transformations, limit=15):
     steps = 0
     new_molecules = set(['e'])
     for steps in range(1, limit):
-        # print steps, ':', len(new_molecules), 'molecules ...'
+        # print("\n", steps, ':', len(new_molecules), 'molecules ...\n')
         temp = set([])
         for molecule in new_molecules:
+            # print('.', end="")
             for possible_molecule in transform_molecule(molecule, transformations):
                 # Did we find a match?
                 if target_molecule == possible_molecule:
@@ -92,10 +96,10 @@ def steps_to_reverse_molecule(target_molecule, reverse, limit=100):
     """Returns number of steps required to reverse engineer molecule."""
     new_molecules = set([target_molecule])
     for step in range(1, limit):
-        print 'Step', step, ':', len(new_molecules), 'molecules.'
+        # print('Step', step, ':', len(new_molecules), 'molecules.')
         temp = set([])
         for atom in reverse.keys():
-            print str(atom),
+            # print(str(atom), end="")
             for molecule in new_molecules:
                 start = 0
                 index = molecule.find(atom, start)
@@ -111,33 +115,112 @@ def steps_to_reverse_molecule(target_molecule, reverse, limit=100):
                     # beginning, a single 'e'.
                     if new_molecule.find('e') < 0:
                         temp.add(new_molecule)
+                        # print(new_molecule)
 
                     start = index + len(atom)
                     index = molecule.find(atom, start)
-        print
+        # print("\n")
         new_molecules = temp
 
     return -1
+
+def random_transformation(molecule, transformations):
+    """Returns a random transformation of the molecule."""
+    possible_molecules = transform_molecule(molecule, transformations)
+    return random.choice(list(possible_molecules))
+
+def trials(target_molecule, transformations, success_limit=5):
+    """Returns number of steps required through random choice."""
+    molecule = 'e'
+    steps = 0
+    n_trials = 0
+    successful_trials = 0
+    min_steps = -1
+    while molecule != target_molecule:
+
+        steps = steps + 1
+        possible_molecules = transform_molecule(molecule, transformations)
+
+        if target_molecule in possible_molecules:
+            successful_trials += 1
+            print('Successful trial', successful_trials, ':', steps)
+
+            if successful_trials == success_limit:
+                return min_steps
+
+            if min_steps == -1:
+                min_steps = steps
+            elif steps < min_steps:
+                min_steps = steps
+
+            molecule = 'e'
+            steps = 0
+            n_trials = 0
+
+        else:
+            molecule = random.choice(list(possible_molecules))
+            if len(molecule) > len(target_molecule):
+                n_trials = n_trials + 1
+                # print("Print starting over", n_trials, "...")
+                molecule = 'e'
+                steps = 0
+    return steps
+
+def greedy_reversal(target_molecule, reverse):
+    """Returns number of steps required to reverse engineer molecule."""
+    reverse_atoms = sorted(reverse.keys(), key=len, reverse=True)
+    molecule = target_molecule
+
+    steps = 0
+    while molecule != 'e':
+        atom = None
+        for atom in reverse_atoms:
+            index = molecule.find(atom)
+            if index >= 0:
+                break
+
+        if atom == None:
+            return
+
+        smallest_atom = sorted(reverse[atom], key=len)[0]
+        while index >= 0:
+            new_molecule = molecule.replace(atom, smallest_atom, 1)
+            molecule = new_molecule
+            steps = steps + 1
+            index = molecule.find(atom)
+
+    return steps
 
 def main():
     """Main application."""
     molecule, transformations = read_data()
     new_molecules = transform_molecule(molecule, transformations)
-    print 'There are', len(new_molecules), 'different molecules', \
-          'produced by one transformation.'
+    print('There are', len(new_molecules), 'different molecules', \
+          'produced by one transformation.')
 
     # The forward method works in the tests but takes up too much
     # memory when I run it on my laptop, leading to system failure.
     # steps = steps_to_build_molecule(molecule, transformations, limit=1000)
-    # print 'There are', steps, 'to build the target molecule.'
+    # print('There are', steps, 'to build the target molecule.')
 
     # Due to the memory requirements of the forward method, I tried
     # a different take, reversing the direction of the transformations.
     # Instead of working forward from 'e' to the target molecule,
     # I work backword from the target molecule to 'e'.
+    # reverse = reverse_transformations(transformations)
+    # steps = steps_to_reverse_molecule(molecule, reverse, limit=3)
+    # print "There are", steps, "to get from 'e' to the target molecule."
+
+    # Unable to get two above solutions, I'm resorting to random tries
+    # steps = trials(molecule, transformations)
+    # print('It took', steps, 'to produce target molecule.')
+
     reverse = reverse_transformations(transformations)
-    steps = steps_to_reverse_molecule(molecule, reverse, limit=1000)
-    print "There are", steps, "to get from 'e' to the target molecule."
+    steps = greedy_reversal(molecule, reverse)
+    print('It took', steps, 'steps to produce target molecule using', \
+          'a greedy algorithm.')
+
+
 
 if __name__ == '__main__':
     main()
