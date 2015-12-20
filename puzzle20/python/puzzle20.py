@@ -51,7 +51,7 @@ def deliver_until_present_count(target_number_of_presents, limit=1000000):
         if index == limit:
             return -1
 
-def release_the_elves(target_present_count, stop_house=1000000):
+def release_the_elves(target_present_count, stop_house=10000000, lazy=False):
     """
     Deliver presents until you find a house where the
     target number of presents gets delivered.
@@ -63,7 +63,15 @@ def release_the_elves(target_present_count, stop_house=1000000):
 
     house = 1
     while True:
-        presents = sum(factoring.get_divisors(house)) * 10
+        divisors = factoring.get_divisors(house)
+
+        # If the elves are lazy then filter divisors because
+        # elves won't deliver to more than 50 houses, but they
+        # will deliver 11 instead of 10 presents
+        if lazy:
+            presents = sum([d for d in divisors if (d * 50) > house]) * 11
+        else:
+            presents = sum(divisors) * 10
 
         if presents >= target_present_count:
             return house, presents
@@ -91,13 +99,24 @@ def main():
     # print 'House number', house_number, 'got', target_present_count, \
           # 'presents (object oriented).'
 
+    import time
+    start = time.time()
     house_number = by_summing_divisors(target_present_count)
     print 'House number', house_number, 'got', target_present_count, \
-          'presents (by summing divisors).'
+          'presents (by calculating sum of divisors from prime factors).'
+    print time.time() - start, 'seconds elapsed'
 
+    start = time.time()
     house_number, dummy_presents = release_the_elves(target_present_count)
     print 'House number', house_number, 'got', target_present_count, \
-          'presents (factoring).'
+          'presents (by summing actual divisors).'
+    print time.time() - start, 'seconds elapsed'
+
+    start = time.time()
+    house_number, presents = release_the_elves(target_present_count, lazy=True)
+    print 'House number', house_number, 'got', presents, \
+          'presents when the elves were lazy (by summing actual divisors).'
+    print time.time() - start, 'seconds elapsed'
 
 if __name__ == '__main__':
     main()
