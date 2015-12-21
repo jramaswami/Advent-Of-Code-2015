@@ -30,25 +30,29 @@ def simulate_combat(player, boss, verbose=False):
         if player['Hit Points'] <= 0:
             return 0
 
-def possible_loadouts(store, max_cost=0):
+def get_ring_combinations(store, max_rings=2):
+    """
+    Returns the list of ring combinations up
+    to the maximum number of rings.
+    """
+    rings = [t for t in store['Rings'].values()]
+    ring_combos = []
+    for index in range(1, max_rings + 1):
+        ring_combos.extend([c for c in it.combinations(rings, index)])
+    # Add the possiblity of having no rings
+    ring_combos.append(({'Name': 'No Rings', 'Cost': 0,
+                         'Damage': 0, 'Armor': 0}, ))
+    return ring_combos
+
+def possible_loadouts(store):
     """Returns list of possible player loadouts."""
     # First add possibility of having no armor
     store['Armor']['No Armor'] = {'Name': 'No Armor', 'Cost': 0,
                                   'Damage': 0, 'Armor': 0}
-
-    # Next calculate all combinations of 0 - 2 rings
-    rings = [t for t in store['Rings'].values()]
-    ring_combos = []
-    for index in range(1, 3):
-        ring_combos.extend([c for c in it.combinations(rings, index)])
-    ring_combos.append(({'Name': 'No Rings', 'Cost': 0,
-                         'Damage': 0, 'Armor': 0}, ))
-
     loadouts = []
-
     for dummy_key, weapon in store['Weapons'].items():
         for dummy_key, armor in store['Armor'].items():
-            for ring_combo in ring_combos:
+            for ring_combo in get_ring_combinations(store, 2):
                 # build items
                 items = [weapon, armor]
                 for ring in ring_combo:
@@ -60,10 +64,7 @@ def possible_loadouts(store, max_cost=0):
                 names = [t['Name'] for t in items]
                 loadout = {'Items': names, 'Cost': cost, \
                                'Damage': damage, 'Armor': defense}
-                if max_cost > 0 and cost > max_cost:
-                    pass
-                else:
-                    loadouts.append(loadout)
+                loadouts.append(loadout)
     return loadouts
 
 def read_store_data():
@@ -111,18 +112,27 @@ def main():
     store = read_store_data()
     boss_master_copy = read_boss_data()
     boss_master_copy['Name'] = 'boss'
-    loadouts = sorted(possible_loadouts(store, 100), \
+    loadouts = sorted(possible_loadouts(store), \
                       key=operator.itemgetter('Cost'))
+
+    min_win_loadout = []
+    max_lose_loadout = []
+
     for loadout in loadouts:
         boss = copy.deepcopy(boss_master_copy)
         player = {'Hit Points': 100, 'Name' : 'player'}
         player['Armor'] = loadout['Armor']
         player['Damage'] = loadout['Damage']
         winner = simulate_combat(player, boss, verbose=False)
-        if winner == 1:
-            print 'Winner with the least cost', \
-                  loadout['Cost'], ':', loadout['Items']
-            break
+        if winner == 1 and min_win_loadout == []:
+            min_win_loadout = loadout
+        elif winner == 0:
+            max_lose_loadout = loadout
+
+    print 'Winner with the least cost', min_win_loadout['Cost'], \
+          ':', min_win_loadout['Items']
+    print 'Loser with the most cost', max_lose_loadout['Cost'], \
+          ':', max_lose_loadout['Items']
 
 if __name__ == '__main__':
     main()
