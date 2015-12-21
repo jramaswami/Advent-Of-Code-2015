@@ -6,7 +6,7 @@ under the recommended age range, and he needs help assembling the
 circuit.
 
 Each wire has an identifier (some lowercase letters) and can carry a
-[16-bit][16-bit] signal (a number from ```0``` to ```65535```). A signal
+[16-bit][] signal (a number from ```0``` to ```65535```). A signal
 is provided to each wire by a gate, another wire, or some specific
 value. Each wire can only get a signal from one source, but can provide
 its signal to multiple destinations. A gate provides no signal until all
@@ -75,7 +75,6 @@ new signal is ultimately provided to wire ```a```?
 Your puzzle answer was ```14710```.
 
 See: http://adventofcode.com/day/7
-
 
 [bitwise-gates]: https://en.wikipedia.org/wiki/Bitwise_operation
 [16-bit]: https://en.wikipedia.org/wiki/16-bit
