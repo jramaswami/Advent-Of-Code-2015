@@ -215,12 +215,19 @@ def main():
     # steps = trials(molecule, transformations)
     # print('It took', steps, 'to produce target molecule.')
 
+    # The random approach did not work either.  So ... let's
+    # just try a greedy substitution approach.
     reverse = reverse_transformations(transformations)
     steps = greedy_reversal(molecule, reverse)
     print('It took', steps, 'steps to produce target molecule using', \
           'a greedy algorithm.')
 
-
+    # Some have suggested an A* search algorithm.  But from the code
+    # I've seen, it ends up being a fancy way of doing the greedy
+    # replacement algorithm if you work backwards. But it might
+    # be interesting to implement this algorithm going forward.
+    # But what would the heuristic for rating distance between
+    # current molecule and target molecule be, length?
 
 if __name__ == '__main__':
     main()
