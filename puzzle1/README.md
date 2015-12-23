@@ -55,3 +55,7 @@ basement?
 Your puzzle answer was 1783.
 
 See: http://adventofcode.com/day/1
+
+* * *
+
+:star: [Day 1 Solution Thread](https://www.reddit.com/3uyl7s)
