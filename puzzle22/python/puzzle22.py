@@ -6,9 +6,9 @@ import rpg
 
 def dfs_iterative(master_spell_list, player, boss):
     """Depth first iteratively."""
+    current_winner = None
+    min_cost = 9999999999999
     stack = []
-    winners = []
-    losers = []
     for spell in master_spell_list:
         stack.append([spell])
 
@@ -19,30 +19,42 @@ def dfs_iterative(master_spell_list, player, boss):
         # reset characters and effects
         player.reset()
         boss.reset()
-        effects = []
+        effects = {}
 
-        # simulate the combat
-        result = rpg.simulate_combat(player, boss, \
-                                     iter(battle_spell_list), effects)
+        if magic.score_spell_list(battle_spell_list) < min_cost:
+            # only simulate if the cost of the spells is less
+            # than the current minimum
+            try:
+                # simulate the combat
+                result = rpg.simulate_combat(player, boss, \
+                                             iter(battle_spell_list), \
+                                             effects)
+            except rpg.SpellCastingException:
+                result = -1
+        else:
+            result = -1
 
         if result == 1:
             # winner
-            cost = sum([player.spell_book.get_spell_cost(s) \
-                        for s in battle_spell_list])
-            winners.append((battle_spell_list, cost))
-            print 'Winner(', cost, '):', battle_spell_list
+            cost = magic.score_spell_list(battle_spell_list)
+            if cost < min_cost:
+                print 'Winner(', cost, '):', battle_spell_list
+                current_winner = battle_spell_list
+                min_cost = cost
         elif result == -1:
             # loser
-            print 'Loser:', battle_spell_list
-            losers.append(battle_spell_list)
+            # print 'Loser:', battle_spell_list
+            pass
         else:
             # combat not resolved
             for spell in master_spell_list:
-                if rpg.spell_can_be_cast(spell, player, effects):
-                    new_battle_spell_list = list(battle_spell_list)
-                    new_battle_spell_list.append(spell)
+                new_battle_spell_list = list(battle_spell_list)
+                new_battle_spell_list.append(spell)
+                # only bother to keep looking if it beats our current min
+                if magic.score_spell_list(new_battle_spell_list) < min_cost:
                     stack.append(new_battle_spell_list)
-    return winners, losers
+        # print len(stack),
+    return current_winner, min_cost
 
 def monte_carlo(limit):
     """Monte Carlo simulation of random spells."""
@@ -77,20 +89,32 @@ def monte_carlo(limit):
 def main():
     """Main program."""
     spell_list = ['Magic Missile', 'Drain', 'Shield', 'Poison', 'Recharge']
-    spell_list.reverse()
     boss = rpg.Character('Boss', hit_points=71, damage=10)
     player = rpg.Character('Player', hit_points=50, mana=500)
-    winners, dummy_losers = dfs_iterative(spell_list, player, boss)
-    min_cost = 999999999
-    min_spell_list = []
-    for spell_list, cost in winners:
-        if cost < min_cost:
-            min_cost = cost
-            min_spell_list = spell_list
-
+    min_cost, winner = dfs_iterative(spell_list, player, boss)
     print "*" * 80
-    print 'Best Spell List:', min_spell_list
+    print 'Best Spell List:', winner
     print 'Minimum Cost:', min_cost
+
+    rpg.HARDMODE = True
+    spell_list = ['Magic Missile', 'Drain', 'Shield', 'Poison', 'Recharge']
+    boss = rpg.Character('Boss', hit_points=71, damage=10)
+    player = rpg.Character('Player', hit_points=50, mana=500)
+    min_cost, winner = dfs_iterative(spell_list, player, boss)
+    print "*" * 80
+    print 'Best Spell List in Hard Mode:', winner
+    print 'Minimum Cost in Hard Mode:', min_cost
+
+    # winner = ['Poison', 'Recharge', 'Shield', 'Poison', 'Recharge',
+              # 'Shield', 'Poison', 'Recharge', 'Shield', 'Magic Missile',
+              # 'Poison', 'Magic Missile']
+    # rpg.VERBOSE = True
+    # boss = rpg.Character('Boss', hit_points=71, damage=10)
+    # player = rpg.Character('Player', hit_points=50, mana=500)
+    # result = rpg.simulate_combat(player, boss, iter(winner), {})
+    # if result == 1:
+        # print 'Player wins!!!'
+
 
 if __name__ == "__main__":
     main()
