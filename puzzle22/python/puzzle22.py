@@ -1,8 +1,46 @@
 """Day 22 Puzzle"""
 
+import tqdm
 import magic
-import strategy
 import rpg
+import itertools
+
+def do_permutations(choose):
+    """Use permutations"""
+    spell_list = ['Magic Missile', 'Drain', 'Shield', 'Poison', 'Recharge']
+    boss = rpg.Character('Boss', hit_points=71, damage=10)
+    player = rpg.Character('Player', hit_points=50, mana=500)
+
+    possible_permutations = len(spell_list) ** choose
+    permutations = itertools.product(spell_list, repeat=choose)
+    tqdm_perms = tqdm.tqdm(permutations, total=possible_permutations)
+
+    min_cost = 999999999
+    winner = []
+
+    for battle_spell_list in tqdm_perms:
+        spell_cost = magic.score_spell_list(battle_spell_list)
+        if spell_cost < min_cost:
+            # simulate battle
+            player.reset()
+            boss.reset()
+            effects = {}
+
+            # simulate the combat
+            try:
+                result = rpg.simulate_combat(player, boss, \
+                                             iter(battle_spell_list), \
+                                             effects)
+            except rpg.SpellCastingException:
+                result = -1
+
+            if result == 1:
+                # winner
+                min_cost = spell_cost
+                winner = battle_spell_list
+                # return min_cost, winner
+
+    return min_cost, winner
 
 def dfs_iterative(master_spell_list, player, boss):
     """Depth first iteratively."""
@@ -38,12 +76,9 @@ def dfs_iterative(master_spell_list, player, boss):
             # winner
             cost = magic.score_spell_list(battle_spell_list)
             if cost < min_cost:
-                print 'Winner(', cost, '):', battle_spell_list
                 current_winner = battle_spell_list
                 min_cost = cost
         elif result == -1:
-            # loser
-            # print 'Loser:', battle_spell_list
             pass
         else:
             # combat not resolved
@@ -53,68 +88,74 @@ def dfs_iterative(master_spell_list, player, boss):
                 # only bother to keep looking if it beats our current min
                 if magic.score_spell_list(new_battle_spell_list) < min_cost:
                     stack.append(new_battle_spell_list)
-        # print len(stack),
     return current_winner, min_cost
 
-def monte_carlo(limit):
+def do_monte_carlo(limit):
     """Monte Carlo simulation of random spells."""
-    import sys
+    import random
 
+    spell_list = ['Magic Missile', 'Drain', 'Shield', 'Poison', 'Recharge']
     min_cost = 999999999999999999
     min_spell_list = []
 
-    for dummy_index in range(limit):
+    for dummy_index in tqdm.tqdm(range(limit)):
         boss = rpg.Character('Boss', hit_points=71, damage=10)
         player = rpg.Character('Player', hit_points=50, mana=500)
-        spell_list = strategy.RandomSpellList(magic.SpellBook())
-        result = rpg.simulate_combat(player, boss, spell_list)
+        effects = {}
+        battle_spell_list = []
+        next_spell = random.choice(spell_list)
+        battle_spell_list.append(next_spell)
+        try:
+            result = rpg.simulate_combat(player, boss, \
+                                         iter([next_spell]), effects)
+        except rpg.SpellCastingException:
+            result = -1
+        while result == 0:
+            next_spell = random.choice(spell_list)
+            battle_spell_list.append(next_spell)
+            try:
+                result = rpg.simulate_combat(player, boss, \
+                                             iter([next_spell]), effects)
+            except rpg.SpellCastingException:
+                result = -1
 
         if result == 1:
-            print
-            print spell_list.cost, spell_list.spells_cast
-            if spell_list.cost < min_cost:
-                min_cost = spell_list.cost
-                min_spell_list = spell_list.spells_cast
-            print
-        else:
-            if dummy_index % 1000 == 0:
-                print dummy_index
-                print spell_list.spells_cast
-            else:
-                print '.',
-            sys.stdout.flush()
+            spell_list_cost = magic.score_spell_list(battle_spell_list)
+            if spell_list_cost < min_cost:
+                min_cost = spell_list_cost
+                min_spell_list = battle_spell_list
 
     return min_cost, min_spell_list
 
+def do_dfs():
+    """Does depth first search for solutions."""
+    spell_list = ['Magic Missile', 'Drain', 'Shield', 'Poison', 'Recharge']
+    boss = rpg.Character('Boss', hit_points=71, damage=10)
+    player = rpg.Character('Player', hit_points=50, mana=500)
+    return dfs_iterative(spell_list, player, boss)
+
 def main():
     """Main program."""
-    spell_list = ['Magic Missile', 'Drain', 'Shield', 'Poison', 'Recharge']
-    boss = rpg.Character('Boss', hit_points=71, damage=10)
-    player = rpg.Character('Player', hit_points=50, mana=500)
-    min_cost, winner = dfs_iterative(spell_list, player, boss)
-    print "*" * 80
-    print 'Best Spell List:', winner
-    print 'Minimum Cost:', min_cost
+    # Random
+    # trials = 1000000
+    # cost, winner = do_monte_carlo(trials)
+    # print 'Random, easy mode,', trials, 'trials', cost, winner
+    # rpg.HARDMODE = True
+    # cost, winner = do_monte_carlo(trials)
+    # print 'Random, hard mode,', trials, 'trials', cost, winner
 
+    # choose = 12
+    # cost, winner = do_permutations(choose)
+    # print 'Permutations, easy mode,', cost, winner
+    # rpg.HARDMODE = True
+    # cost, winner = do_permutations(choose)
+    # print 'Permutations, hard mode,', cost, winner
+
+    cost, winner = do_dfs()
+    print 'DFS, easy mode,', cost, winner
     rpg.HARDMODE = True
-    spell_list = ['Magic Missile', 'Drain', 'Shield', 'Poison', 'Recharge']
-    boss = rpg.Character('Boss', hit_points=71, damage=10)
-    player = rpg.Character('Player', hit_points=50, mana=500)
-    min_cost, winner = dfs_iterative(spell_list, player, boss)
-    print "*" * 80
-    print 'Best Spell List in Hard Mode:', winner
-    print 'Minimum Cost in Hard Mode:', min_cost
-
-    # winner = ['Poison', 'Recharge', 'Shield', 'Poison', 'Recharge',
-              # 'Shield', 'Poison', 'Recharge', 'Shield', 'Magic Missile',
-              # 'Poison', 'Magic Missile']
-    # rpg.VERBOSE = True
-    # boss = rpg.Character('Boss', hit_points=71, damage=10)
-    # player = rpg.Character('Player', hit_points=50, mana=500)
-    # result = rpg.simulate_combat(player, boss, iter(winner), {})
-    # if result == 1:
-        # print 'Player wins!!!'
-
+    cost, winner = do_dfs()
+    print 'DFS, hard mode,', cost, winner
 
 if __name__ == "__main__":
     main()
