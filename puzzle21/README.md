@@ -92,3 +92,7 @@ What is the *most* amount of gold you can spend and still *lose* the fight?
 Your puzzle answer was `158`.
 
 http://adventofcode.com/day/21
+
+* * * 
+
+:star: [Day 21 Solution Thread](https://www.reddit.com/3xnyoi)

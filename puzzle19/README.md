@@ -85,3 +85,9 @@ replacements and the medicine molecule in your puzzle input, what is the
 fewest number of steps to go from e to the medicine molecule?
 
 Your puzzle answer was `200`.
+
+See http://adventofcode.com/day/19
+
+* * * 
+
+:star: [Day 19 Solution Thread](https://www.reddit.com/3xflz8)

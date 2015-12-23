@@ -62,3 +62,7 @@ How many strings are nice under these new rules?
 Your puzzle answer was `53`.
 
 See: http://adventofcode.com/day/5
+
+* * * 
+
+:star: [Day 5 Solution Thread](https://www.reddit.com/3vdn8a)

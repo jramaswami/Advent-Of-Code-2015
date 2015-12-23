@@ -50,3 +50,7 @@ and Robo-Santa going the other.
 Your puzzle answer was 2341.
 
 See: http://adventofcode.com/day/3
+
+* * * 
+
+:star: [Day 3 Solution Thread](https://www.reddit.com/3v8roh)

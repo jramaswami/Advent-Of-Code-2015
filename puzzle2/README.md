@@ -46,3 +46,7 @@ How many total feet of ribbon should they order?
 Your puzzle answer was 3842356.
 
 See: http://adventofcode.com/day/2
+
+* * * 
+
+:star: [Day 2 Solution Thread](https://www.reddit.com/3v3w2f)

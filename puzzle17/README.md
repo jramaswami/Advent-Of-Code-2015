@@ -35,3 +35,7 @@ would be 3.
 Your puzzle answer was 18.
 
 See http://adventofcode.com/day/17
+
+* * * 
+
+:star: [Day 17 Solution Thread](https://www.reddit.com/3x6cyr)

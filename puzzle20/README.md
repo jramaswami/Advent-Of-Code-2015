@@ -58,3 +58,7 @@ Your puzzle input is still `34000000`.
 Your puzzle answer was `831600`.
 
 http://adventofcode.com/day/20
+
+* * * 
+
+:star: [Day 20 Solution Thread](https://www.reddit.com/3xjpp2)

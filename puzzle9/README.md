@@ -49,3 +49,7 @@ What is the distance of the longest route?
 Your puzzle answer was `736`.
 
 See: http://adventofcode.com/day/9
+
+* * * 
+
+:star: [Day 9 Solution Thread](https://www.reddit.com/3w192e)

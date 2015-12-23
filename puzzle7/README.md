@@ -76,6 +76,10 @@ Your puzzle answer was `14710`.
 
 See: http://adventofcode.com/day/7
 
+* * * 
+
+:star: [Day 7 Solution Thread](https://www.reddit.com/3vr4m4)
+
 [bitwise-gates]: https://en.wikipedia.org/wiki/Bitwise_operation
 [16-bit]: https://en.wikipedia.org/wiki/16-bit
 [left-shifted]: https://en.wikipedia.org/wiki/Logical_shift

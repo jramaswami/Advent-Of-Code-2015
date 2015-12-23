@@ -59,3 +59,7 @@ toggle 0,0 through 999,999 would increase the total brightness by 2000000.
 Your puzzle answer was `14687245`.
 
 See: http://adventofcode.com/day/6
+
+* * * 
+
+:star: [Day 6 Solution Thread](https://www.reddit.com/3vmltn)

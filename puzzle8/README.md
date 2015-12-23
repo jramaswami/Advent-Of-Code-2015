@@ -66,6 +66,10 @@ Your puzzle answer was `2085`.
 
 See: http://adventofcode.com/day/8
 
+* * * 
+
+:star: [Day 8 Solution Thread](https://www.reddit.com/3vw32y)
+
 [c-escape]: https://en.wikipedia.org/wiki/Escape_sequences_in_C
 [javascript-escape]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String
 [perl-escape]: http://perldoc.perl.org/perlop.html#Quote-and-Quote-like-Operators

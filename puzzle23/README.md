@@ -59,6 +59,10 @@ Your puzzle answer was `334`.
 
 See http://adventofcode.com/day/23
 
+* * * 
+
+:star: [Day 23 Solution Thread](https://www.reddit.com/3xxdxt)
+
 [registers]: https://en.wikipedia.org/wiki/Processor_register 
 [instructions]: https://en.wikipedia.org/wiki/Instruction_set
 [non-negative]: https://en.wikipedia.org/wiki/Natural_number

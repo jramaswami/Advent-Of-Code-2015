@@ -159,3 +159,7 @@ after 100 steps?
 Your puzzle answer was 886.
 
 See http://adventofcode.com/day/18
+
+* * * 
+
+:star: [Day 18 Solution Thread](https://www.reddit.com/3xb3cj)

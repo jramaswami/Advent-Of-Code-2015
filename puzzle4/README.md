@@ -35,3 +35,7 @@ Your puzzle input is still `iwrupvqb`.
 Your puzzle answer was `9958218`.
 
 See: http://adventofcode.com/day/4
+
+* * * 
+
+:star: [Day 4 Solution Thread](https://www.reddit.com/3vdn8a)

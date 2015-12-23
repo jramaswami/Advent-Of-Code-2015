@@ -161,3 +161,7 @@ Your puzzle answer was `1937`.
 
 http://adventofcode.com/day/22
 
+* * * 
+
+:star: [Day 22 Solution Thread](https://www.reddit.com/3xspyl)
+
