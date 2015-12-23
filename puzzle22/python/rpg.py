@@ -121,22 +121,24 @@ def simulate_combat_round(player, boss, effects, player_spell):
     log(str(boss))
     log(str(player))
 
-def simulate_combat(player, boss, player_spell_iterator):
+def simulate_combat(player, boss, player_spell_iterator, effects=[]):
     """Simluate combat"""
 
     log('Beginning combat ...')
     log(str(player))
     log(str(boss))
 
-    effects = []
-    player_spell_iterator.set_environ(player, effects)
+    # player_spell_iterator.set_environ(player, effects)
     while player.hit_points > 0 and boss.hit_points > 0:
-        player_spell = player_spell_iterator.next()
+        try:
+            player_spell = player_spell_iterator.next()
+        except StopIteration:
+            return 0
         simulate_combat_round(player, boss, effects, player_spell)
         if boss.is_dead():
             return 1
         if player.is_dead():
-            return 0
+            return -1
 
 def spell_can_be_cast(spell, player, effects):
     """Function to say if spell can be cast."""
@@ -148,4 +150,57 @@ def spell_can_be_cast(spell, player, effects):
     else:
         return True
 
+def simulate_combat_round_with_functions(player, boss, spell, effects):
+    # player turn
+    log("\n-- Player Turn --")
+    log(str(player))
+    log(str(boss))
 
+    for effect in effects:
+        effect(player, boss)
+
+    if boss.is_dead():
+        log('Boss is dead!')
+        return
+
+    # Cast spell
+    spell(player, boss, effects)
+
+    # boss turn effects first
+    log("\n-- Boss Turn --")
+    log(str(player))
+    log(str(boss))
+    execute_effects(effects)
+    if boss.is_dead():
+        log('Boss is dead!')
+        log(str(boss))
+        log(str(player))
+        return
+    attack_damage = boss.attack(player)
+    log('Boss attacked player for %d damage.' % attack_damage)
+    log('Player now has %d hp.' % player.hit_points)
+    if player.is_dead():
+        log('Player is dead!')
+        log(str(boss))
+        log(str(player))
+        return
+
+    log(str(boss))
+    log(str(player))
+
+
+def simulate_combat_with_functions(boss, player, spells, effects):
+    log('Beginning combat ...')
+    log(str(player))
+    log(str(boss))
+
+    while player.hit_points > 0 and boss.hit_points > 0:
+        try:
+            player_spell = spells.next()
+        except StopIteration:
+            return 0
+        simulate_combat_round_with_functions(player, boss, effects, player_spell)
+        if boss.is_dead():
+            return 1
+        if player.is_dead():
+            return -1

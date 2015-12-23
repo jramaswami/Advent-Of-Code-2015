@@ -132,3 +132,49 @@ class CharacterEffects(object):
         return "%d hp; %d armor; %d mana" \
                % (self.hit_points, self.armor, self.mana)
 
+###############################################################################
+
+def magic_missle(player, boss, effects):
+    """Magic Missile spell."""
+    player.mana -= 53
+    boss.hit_points -= 4
+
+def drain(player, boss, effects):
+    """Drain spell."""
+    player.hit_points += 2
+    player.hit_points -= 2
+
+def shield(player, boss, effects):
+    """Shield spell."""
+    player.armor = 3
+
+    def anti_shield(player, boss):
+        """Turn off shield effect."""
+        player.armor = 0
+
+    if len(effects) > 5:
+        effects[6] = [anti_shield]
+    else:
+        effects[6].append(anti_shield)
+
+def poison(player, boss, effects):
+    """Add poison effect."""
+    def poison_effect(player, boss):
+        boss.hit_points -= 3
+
+    for index in range(6):
+        if len(effects) < index:
+            effects[index] = [poison_effect]
+        else:
+            effects[index].append(poison_effect)
+
+def recharge(player, boss, effects):
+    """Recharge spell."""
+    def recharge_effect(player, boss):
+        player.mana += 5
+
+    for index in range(5):
+        if len(effects) < index:
+            effects[index] = [recharge_effect]
+        else:
+            effects[index].append(recharge_effect)

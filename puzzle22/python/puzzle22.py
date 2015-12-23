@@ -3,85 +3,45 @@
 import magic
 import strategy
 import rpg
-import copy
 
-def dfs(spell_list, player, boss, effects, accumulator, winners, losers):
-    """Depth first search with backtracking."""
-    for spell in spell_list:
-        if rpg.spell_can_be_cast(spell, player, effects):
-            # copy objects
-            player_clone = copy.copy(player)
-            boss_clone = copy.copy(boss)
-            effects_clone = copy.deepcopy(effects)
-            accumulator = list(accumulator)
-
-            # simulate combat
-            rpg.simulate_combat_round(player_clone, boss_clone,
-                                      effects_clone, spell)
-
-            if boss_clone.is_dead():
-                # win, record it and then pop up to next level
-                accumulator.append(spell)
-                winners.append(accumulator)
-
-            if player_clone.is_dead():
-                # backtrack and try again
-                accumulator.append(spell)
-                losers.append(accumulator)
-
-            # if boss and player are alive, continue on one level down
-            dfs(spell_list, player, boss, effects, \
-                accumulator, winners, losers)
-
-
-class SpellBattle(object):
-    """A spell battle."""
-    def __init__(self, spell_list, player, boss, effects, result=0):
-        self.spell_list = spell_list
-        self.result = result
-        self.effects = []
-        self.player = player
-        self.boss = boss
-
-    def add_spell(self, spell):
-        """Add a spell."""
-        self.spell_list.append(spell)
-
-    def simulate_combat_round(self):
-        """Simulate a round of combat."""
-        rpg.simulate_combat_round(self.player, self.boss, \
-                                  self.effects, self.spell_list[-1])
-        if self.boss.is_dead():
-            return 1
-        elif self.player.is_dead():
-            return -1
-        else:
-            return 0
-
-def dfs_iterative(spell_list, player, boss):
+def dfs_iterative(master_spell_list, player, boss):
     """Depth first iteratively."""
     stack = []
     winners = []
     losers = []
-    for spell in spell_list:
-        stack.append(SpellBattle([spell], player, boss, []))
+    for spell in master_spell_list:
+        stack.append([spell])
 
     while len(stack) > 0:
-        spell_battle = stack.pop()
-        result = spell_battle.simulate_combat_round()
+        # get spell list for battle
+        battle_spell_list = stack.pop()
+
+        # reset characters and effects
+        player.reset()
+        boss.reset()
+        effects = []
+
+        # simulate the combat
+        result = rpg.simulate_combat(player, boss, \
+                                     iter(battle_spell_list), effects)
+
         if result == 1:
             # winner
-            winners.append(spell_battle.spell_list)
+            cost = sum([player.spell_book.get_spell_cost(s) \
+                        for s in battle_spell_list])
+            winners.append((battle_spell_list, cost))
+            print 'Winner(', cost, '):', battle_spell_list
         elif result == -1:
             # loser
-            losers.append(spell_battle.spell_list)
+            print 'Loser:', battle_spell_list
+            losers.append(battle_spell_list)
         else:
-            for spell in spell_list:
-                if rpg.spell_can_be_cast(spell, spell_battle.player, \
-                        spell_battle.effects):
-                    new_spell_battle = copy.deepcopy(spell_battle)
-                    new_spell_battle.add_spell(spell)
-                    stack.append(new_spell_battle)
+            # combat not resolved
+            for spell in master_spell_list:
+                if rpg.spell_can_be_cast(spell, player, effects):
+                    new_battle_spell_list = list(battle_spell_list)
+                    new_battle_spell_list.append(spell)
+                    stack.append(new_battle_spell_list)
     return winners, losers
 
 def monte_carlo(limit):
@@ -116,57 +76,21 @@ def monte_carlo(limit):
 
 def main():
     """Main program."""
-    # Random
-    # min_cost, min_spell_list = monte_carlo(100000)
-    # print "Best spell list:", min_spell_list
-    # print "Minimum cost is:", min_cost
-
-    # Max Cost
-    # boss = Character('Boss', hit_points=71, damage=10)
-    # player = Character('Player', hit_points=50, mana=500)
-    # spell_list = strategy.MaxCostSpellList(magic.SpellBook())
-    # result = simulate_combat(player, boss, spell_list)
-    # print "*" * 80
-    # print 'MAX COST SPELL:'
-    # if result == 1:
-        # print 'Player wins!'
-    # else:
-        # print 'Player loses.'
-    # print boss, player
-
-    # Max Damage
-    # boss = Character('Boss', hit_points=71, damage=10)
-    # player = Character('Player', hit_points=50, mana=500)
-    # spell_list = strategy.MaxDamageSpellList(magic.SpellBook())
-    # result = simulate_combat(player, boss, spell_list)
-    # print "*" * 80
-    # print 'MAX DAMAGE SPELL:'
-    # if result == 1:
-        # print 'Player wins!'
-    # else:
-        # print 'Player loses.'
-    # print boss, player
-
-    # Shields Up
-    # boss = Character('Boss', hit_points=71, damage=10)
-    # player = Character('Player', hit_points=50, mana=500)
-    # spell_list = strategy.ShieldsUpSpellList(magic.SpellBook())
-    # result = simulate_combat(player, boss, spell_list)
-    # print "*" * 80
-    # print 'SHIELDS UP'
-    # if result == 1:
-        # print 'Player wins!'
-    # else:
-        # print 'Player loses.'
-    # print boss, player
-
     spell_list = ['Magic Missile', 'Drain', 'Shield', 'Poison', 'Recharge']
+    spell_list.reverse()
     boss = rpg.Character('Boss', hit_points=71, damage=10)
     player = rpg.Character('Player', hit_points=50, mana=500)
-    winners, losers = dfs_iterative(spell_list, player, boss)
-    print 'winners:\n'
-    for item in winners:
-        print item
+    winners, dummy_losers = dfs_iterative(spell_list, player, boss)
+    min_cost = 999999999
+    min_spell_list = []
+    for spell_list, cost in winners:
+        if cost < min_cost:
+            min_cost = cost
+            min_spell_list = spell_list
+
+    print "*" * 80
+    print 'Best Spell List:', min_spell_list
+    print 'Minimum Cost:', min_cost
 
 if __name__ == "__main__":
     main()
