@@ -11,7 +11,6 @@ class TestPuzzle24(unittest.TestCase):
         p24.DEBUG = False
         packages = range(1, 6)
         packages.extend(range(7, 12))
-        packages.reverse
 
         weight = sum(packages) / 3
         solutions = p24.find_groups(packages, weight, early_exit=False)
