@@ -27,7 +27,7 @@ def log(message):
 import itertools as it
 def find_groups(packages, total_weight, group_number=1, early_exit=True):
     """Find a group from packages with a given total weight."""
-    solutions = set([])
+    solutions = []
     # Starting from a length of 1, iterate through all the
     # combinations of packages of the given length.
     for group_length in xrange(1, len(packages)):
@@ -52,12 +52,7 @@ def find_groups(packages, total_weight, group_number=1, early_exit=True):
                     if len(remaining_groups) > 0:
                         # There are solutions in the remaining packages
                         # so, append the group to the list of solutions
-                        group1 = tuple(sorted(group, reverse=True))
-                        group2 = tuple(sorted(remaining_groups[0], reverse=True))
-                        group3 = tuple(sorted(remaining_groups[1], reverse=True))
-                        solution_groups = sorted([group1, group2, group3], key=len)
-
-                        solutions.add(tuple(solution_groups))
+                        solutions.append(sorted(list(group), reverse=True))
                 # We are verifying that there are solutions for group 2
                 # and group 3.  If there is a solution to group 2, then
                 # there must be a solution to group 3 since the required
