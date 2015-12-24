@@ -17,7 +17,7 @@
 #       end if
 # end for
 
-DEBUG = True
+DEBUG = False
 
 def log(message):
     """Prints message if DEBUG is True."""
@@ -80,12 +80,27 @@ def find_groups(packages, total_weight, group_number=1, early_exit=True):
 
     return solutions
 
+
 def main():
     """Main program."""
+    import operator
     data = [1, 3, 5, 11, 13, 17, 19, 23, 29, 31, 37, 41,
             43, 47, 53, 59, 67, 71, 73, 79, 83, 89, 97,
             101, 103, 107, 109, 113]
 
+    weight = sum(data) / 3
+    solutions = find_groups(data, weight, early_exit=True)
+
+    winner = solutions[0]
+    min_qe = reduce(operator.mul, solutions[0])
+
+    for solution in solutions:
+        quantum_entanglement = reduce(operator.mul, solution)
+        if quantum_entanglement < min_qe:
+            min_qe = quantum_entanglement
+            winner = solution
+
+    print 'Minimum QE is %d for solution %s' % (min_qe, winner)
 
 if __name__ == "__main__":
     main()
