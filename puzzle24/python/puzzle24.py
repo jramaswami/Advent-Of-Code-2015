@@ -19,13 +19,15 @@
 
 DEBUG = False
 
+import operator
+
 def log(message):
     """Prints message if DEBUG is True."""
     if DEBUG:
         print message
 
 import itertools as it
-def find_groups(packages, total_weight, group_number=1, early_exit=True):
+def find_groups(packages, total_weight, group_number=1, groups_of=3, early_exit=True):
     """Find a group from packages with a given total weight."""
     solutions = []
     # Starting from a length of 1, iterate through all the
@@ -53,23 +55,34 @@ def find_groups(packages, total_weight, group_number=1, early_exit=True):
                         # There are solutions in the remaining packages
                         # so, append the group to the list of solutions
                         solutions.append(sorted(list(group), reverse=True))
-                # We are verifying that there are solutions for group 2
-                # and group 3.  If there is a solution to group 2, then
-                # there must be a solution to group 3 since the required
-                # weight is total weight divided by 3 and we have found
-                # two groups of the required weight:
-                #       total_weight = 3 * group_weight
-                # We can just return the single solution because we
-                # just want to verify.
                 else:
                     log('Verified group %d solution: %s --> %d' \
                         % (group_number, str(group), sum(group)))
-                    remaining_packages = [p for p in packages if p not in group]
-                    log('Verified group %d solution: %s --> %d' \
-                        % (group_number + 1, str(remaining_packages), \
-                           sum(remaining_packages)))
-                    log("*" * 20)
-                    return [group, tuple(remaining_packages)]
+
+                    if group_number == groups_of - 1:
+                        # If we are down to two groups, verify them both
+                        remaining_packages = [p for p in packages if p not in group]
+                        log('Verified group %d solution: %s --> %d' \
+                            % (group_number + 1, str(remaining_packages), \
+                               sum(remaining_packages)))
+                        log("*" * 20)
+                        return [group, tuple(remaining_packages)]
+                    else:
+                        # More subsequent groups, recurse
+                        remaining_packages = [p for p in packages if p not in group]
+                        subgroups = find_groups(remaining_packages, \
+                                                total_weight, \
+                                                group_number=group_number+1)
+                        # If there are solutions in subsequent groups
+                        # then we can add this group and return the
+                        # subgroups.
+                        if len(subgroups) > 0:
+                            return [group] + subgroups
+            else:
+                if group_number > 1:
+                    log('Failed to verify groups %s; sum %d = %d' \
+                        % (group, sum(group), total_weight))
+
 
         # If an early exit has been requested and
         # if we have solutions then we have found the
@@ -80,16 +93,11 @@ def find_groups(packages, total_weight, group_number=1, early_exit=True):
 
     return solutions
 
+def do_puzzle(data, groups_of):
+    """Do the puzzle."""
 
-def main():
-    """Main program."""
-    import operator
-    data = [1, 3, 5, 11, 13, 17, 19, 23, 29, 31, 37, 41,
-            43, 47, 53, 59, 67, 71, 73, 79, 83, 89, 97,
-            101, 103, 107, 109, 113]
-
-    weight = sum(data) / 3
-    solutions = find_groups(data, weight, early_exit=True)
+    weight = sum(data) / groups_of
+    solutions = find_groups(data, weight, groups_of=groups_of, early_exit=True)
 
     winner = solutions[0]
     min_qe = reduce(operator.mul, solutions[0])
@@ -99,8 +107,18 @@ def main():
         if quantum_entanglement < min_qe:
             min_qe = quantum_entanglement
             winner = solution
+    return min_qe, winner
 
-    print 'Minimum QE is %d for solution %s' % (min_qe, winner)
+def main():
+    """Main program."""
+    data = [1, 3, 5, 11, 13, 17, 19, 23, 29, 31, 37, 41,
+            43, 47, 53, 59, 67, 71, 73, 79, 83, 89, 97,
+            101, 103, 107, 109, 113]
+    min_qe, winner = do_puzzle(data, 3)
+    print 'Minimum QE for groups of 3 is %d for solution %s' % (min_qe, winner)
+
+    min_qe, winner = do_puzzle(data, 4)
+    print 'Minimum QE for groups of 4 is %d for solution %s' % (min_qe, winner)
 
 if __name__ == "__main__":
     main()
