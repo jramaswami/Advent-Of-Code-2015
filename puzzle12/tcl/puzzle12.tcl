@@ -1,17 +1,29 @@
 # Advent of Code 2015 :: Day 12 :: JSAbacusFramework.io
 
-package require json
+# The json package in tcllib does not include type information.
+# I found a json package on the Tcl'ers Wiki.  It does include
+# the type information neccesary to sovle part 2.
 
-proc sum_json {json level} {
+source json.tcl
+
+proc sum_json {json level {filter_red 0}} {
     set total 0
-    if {[string is alpha $json]} {
-        # do nothing
-    }  elseif {[string is integer $json]} {
-        incr total $json
+    set type [lindex $json 0]
+    set value [lindex $json 1]
+    if {$type == "array"} {
+        foreach json0 $value {
+            incr total [sum_json $json0 [expr {$level + 1}] $filter_red]
+        }
+    } elseif {$type == "object"} {
+        dict for {k v} $value {
+            incr total [sum_json $v [expr {$level + 1}] $filter_red]
+            if {$filter_red && [string compare [lindex $v 1] "red"] == 0} {
+                return 0
+            }
+        }
     } else {
-        foreach json0 $json {
-            set level0 [expr {$level + 1}]
-            incr total [sum_json $json0 $level0]
+        if {$type == "number"} {
+            incr total $value
         }
     }
     return $total
@@ -19,6 +31,7 @@ proc sum_json {json level} {
 
 if {!$tcl_interactive} {
     set input [read stdin]
-    set json [::json::json2dict $input]
-    puts "The answer to part 1 is [sum_json $json 0]."
+    set json [::json::decode $input]
+    puts "The solution to part 1 is [sum_json $json 0]."
+    puts "The solution to part 2 is [sum_json $json 0 1]."
 }
