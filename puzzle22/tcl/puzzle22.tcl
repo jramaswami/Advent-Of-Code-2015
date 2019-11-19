@@ -1,335 +1,306 @@
 # Advent of Code 2015 :: Day 22 :: Wizard Simulator 20XX
 
-# State of play
-# {<Status> <Mana Spent> <Boss Hit Points> <Boss Damage> <Hero Hitpoints> <Hero Mana> <Hero Armor> {<Effect, Effect Timer> <Effect, Effect Timer> ...}}
+package require struct::stack
 
-proc play_state {boss_hp boss_dmg hero_hp hero_mana} {
-    return [list ok 0 $boss_hp $boss_dmg $hero_hp $hero_mana 0 {}]
-}
+# mana_spent hero_mana hero_hp hero_armor boss_hp <effects {{spell timer} ...}> <history {spell ...}>?
 
-proc init_state {} {
-    return [list ok 0 71 10 50 500 0 {}]
-}
+set VERBOSE 0
 
-proc spell_is_active {spell effects} {
-    foreach spell $effects {
-        set effect_name [lindex $spell 0]
-        if {$effect_name == $spell} {
-            return 1
-        }
+proc log {msg} {
+    if {$::VERBOSE} {
+        puts $msg
     }
-    return 0
 }
-
-# Set state variables in enclosing scope.
-proc set_state_vars {state} {
-    upvar battle_status local_battle_status
-    upvar mana_spent local_mana_spent
-    upvar boss_hp local_boss_hp
-    upvar boss_dmg local_boss_dmg
-    upvar hero_hp local_hero_hp
-    upvar hero_mana local_hero_mana
-    upvar hero_armor local_hero_armor
-    upvar effects local_effects
-
-    set local_battle_status [lindex $state 0]
-    set local_mana_spent [lindex $state 1]
-    set local_boss_hp [lindex $state 2]
-    set local_boss_dmg [lindex $state 3]
-    set local_hero_hp [lindex $state 4]
-    set local_hero_mana [lindex $state 5]
-    set local_hero_armor [lindex $state 6]
-    set local_effects [lindex $state end]
-}
-
-proc get_battle_status {state} { return [lindex $state 0] }
-
-proc get_mana_spent {state} { return [lindex $state 1] }
-
-proc get_boss_hp {state} { return [lindex $state 2] }
-
-proc get_boss_dmg {state} { return [lindex $state 3] }
-
-proc get_hero_hp {state} { return [lindex $state 4] }
-
-proc get_hero_mana {state} { return [lindex $state 5] }
-
-proc get_hero_armor {state} { return [lindex $state 6] }
-
-proc get_effects {state} { return [lindex $state end] }
 
 proc apply_effects {state} {
-    set_state_vars $state
-
-    # Reset hero armor to 0
+    set mana_spent [lindex $state 0]
+    set hero_mana [lindex $state 1]
+    set hero_hp [lindex $state 2]
     set hero_armor 0
+    set boss_hp [lindex $state 4]
+    set effects [lindex $state 5]
+    set spells [lindex $state 6]
 
     set effects0 {}
     foreach effect $effects {
         set effect_name [lindex $effect 0]
         set effect_timer [lindex $effect 1]
 
-        if {$effect_name == "poison"} {
+        if {$effect_name == "shield"} {
+            log "Hero armor +7 ..."
+            incr hero_armor 7
+        } elseif {$effect_name == "poison"} {
+            log "Boss hp -3 ..."
             incr boss_hp -3
         } elseif {$effect_name == "recharge"} {
+            log "Hero mana +101 ..."
             incr hero_mana 101
-        } elseif {$effect_name == "shield"} {
-            incr hero_armor 7
         }
-
         incr effect_timer -1
         if {$effect_timer > 0} {
             lappend effects0 [list $effect_name $effect_timer]
         }
     }
-    return [list $battle_status $mana_spent $boss_hp $boss_dmg $hero_hp $hero_mana $hero_armor $effects0]
+    return [list $mana_spent $hero_mana $hero_hp $hero_armor $boss_hp $effects0 $spells]
 }
 
-proc set_battle_status {state_var value} {
-    upvar $state_var local_state
-    lset local_state 0 $value
-}
 
-proc incr_mana_spent {state_var value} {
-    upvar $state_var local_state
-    lset local_state 1 [expr {[get_mana_spent $local_state] + $value}]
-}
+proc boss_attack {boss_dmg state} {
 
-proc incr_boss_hp {state_var value} {
-    upvar $state_var local_state
-    lset local_state 2 [expr {[get_boss_hp $local_state] + $value}]
-}
+    # Apply effects
+    set state [apply_effects $state]
 
-proc incr_hero_hp {state_var value} {
-    upvar $state_var local_state
-    lset local_state 4 [expr {[get_hero_hp $local_state] + $value}]
-}
+    # Boss dead?
+    if {[lindex $state 4] <= 0} {
+        return $state
+    }
 
-proc incr_hero_mana {state_var value} {
-    upvar $state_var local_state
-    lset local_state 5 [expr {[get_hero_mana $local_state] + $value}]
-}
+    set mana_spent [lindex $state 0]
+    set hero_mana [lindex $state 1]
+    set hero_hp [lindex $state 2]
+    set hero_armor [lindex $state 3] 
+    set boss_hp [lindex $state 4]
+    set effects [lindex $state 5]
+    set spells [lindex $state 6]
 
-proc append_effect {state_var effect timer} {
-    upvar $state_var local_state
-    set effects [get_effects $local_state]
-    lappend effects [list $effect $timer]
-    lset local_state end $effects
+    # Effective damage
+    set boss_dmg0 [::tcl::mathfunc::max 1 [expr {$boss_dmg - $hero_armor}]]
+    log "Hero hp -$boss_dmg0"
+    incr hero_hp -$boss_dmg0
+
+    # Return new state
+    return [list $mana_spent $hero_mana $hero_hp $hero_armor $boss_hp $effects $spells]
 }
 
 proc magic_missile {state} {
-    if {[get_hero_mana $state] < 53} {
-        set_battle_status state loss
-        return $state
-    }
-    incr_hero_mana state -53
-    incr_mana_spent state  53
-
-    set state [apply_effects $state]
-    if {[get_boss_hp $state] <= 0} {
-        set_battle_status state win
-        return $state
-    }
-
-    incr_boss_hp state -4
-
-    if {[get_boss_hp $state] <= 0} {
-        set_battle_status state win
-        return $state
-    }
+    # Spend mana on spell
+    set mana_spent [lindex $state 0]
+    set hero_mana [lindex $state 1]
+    incr mana_spent 53
+    incr hero_mana -53
+    set state [list $mana_spent $hero_mana {*}[lrange $state 2 end]]
     
-    set_battle_status state ok
-    return $state
+    # Apply effects
+    set state [apply_effects $state]
+
+    set mana_spent [lindex $state 0]
+    set hero_mana [lindex $state 1]
+    set hero_hp [lindex $state 2]
+    set hero_armor [lindex $state 3] 
+    set boss_hp [lindex $state 4]
+    set effects [lindex $state 5]
+    set spells [lindex $state 6]
+
+    # Damage to boss
+    log "Boss hp -4 ..."
+    incr boss_hp -4
+
+    # Return new state
+    return [list $mana_spent $hero_mana $hero_hp $hero_armor $boss_hp $effects [list magic_missile {*}$spells]]
 }
 
 proc drain {state} {
-    if {[get_hero_mana $state] < 73} {
-        set_battle_status state loss
-        return $state
-    }
-    incr_hero_mana state -73
-    incr_mana_spent state 73
-
+    # Spend mana on spell
+    set mana_spent [lindex $state 0]
+    set hero_mana [lindex $state 1]
+    incr mana_spent 73
+    incr hero_mana -73
+    set state [list $mana_spent $hero_mana {*}[lrange $state 2 end]]
+    
+    # Apply effects
     set state [apply_effects $state]
 
-    if {[get_boss_hp $state] <= 0} {
-        set_battle_status state win
-        return $state
-    }
+    set mana_spent [lindex $state 0]
+    set hero_mana [lindex $state 1]
+    set hero_hp [lindex $state 2]
+    set hero_armor [lindex $state 3] 
+    set boss_hp [lindex $state 4]
+    set effects [lindex $state 5]
+    set spells [lindex $state 6]
 
-    incr_boss_hp state -2
-    incr_hero_hp state 2
-    if {[get_boss_hp $state] <= 0} {
-        set_battle_status state win
-        return $state
-    }
+    # Damage to boss, heal hero
+    log "Boss hp -2, hero hp +2"
+    incr boss_hp -2
+    incr hero_hp 2
 
-    set_battle_status state ok
-    return $state
+    # Return new state
+    return [list $mana_spent $hero_mana $hero_hp $hero_armor $boss_hp $effects [list drain {*}$spells]]
 }
 
 proc shield {state} {
-    if {[get_hero_mana $state] < 113} {
-        set_battle_status state loss
-        return $state
-    }
-    incr_hero_mana state -113
-    incr_mana_spent state 113
-
+    # Spend mana on spell
+    set mana_spent [lindex $state 0]
+    set hero_mana [lindex $state 1]
+    incr mana_spent 113
+    incr hero_mana -113
+    set state [list $mana_spent $hero_mana {*}[lrange $state 2 end]]
+    
+    # Apply effects
     set state [apply_effects $state]
 
-    if {[get_boss_hp $state] <= 0} {
-        set_battle_status state win
-        return $state
-    }
+    set mana_spent [lindex $state 0]
+    set hero_mana [lindex $state 1]
+    set hero_hp [lindex $state 2]
+    set hero_armor [lindex $state 3] 
+    set boss_hp [lindex $state 4]
+    set effects [lindex $state 5]
+    set spells [lindex $state 6]
 
-    if {[spell_is_active shield [get_effects $state]]} {
-        set_battle_status state loss
-        return $state
-    }
-
-    append_effect state shield 6
-    set_battle_status state ok
-    return $state
+    # Return new state
+    return [list $mana_spent $hero_mana $hero_hp $hero_armor $boss_hp [list {shield 6} {*}$effects] [list shield {*}$spells]]
 }
 
 proc poison {state} {
-    if {[get_hero_mana $state] < 173} {
-        set_battle_status state loss
-        return $state
-    }
-    incr_hero_mana state -173
-    incr_mana_spent state 173
-
+    # Spend mana on spell
+    set mana_spent [lindex $state 0]
+    set hero_mana [lindex $state 1]
+    incr mana_spent 173
+    incr hero_mana -173
+    set state [list $mana_spent $hero_mana {*}[lrange $state 2 end]]
+    
+    # Apply effects
     set state [apply_effects $state]
 
-    if {[get_boss_hp $state] <= 0} {
-        set_battle_status state win
-        return $state
-    }
-     
-    if {[spell_is_active poison [get_effects $state]]} {
-        set_battle_status state loss
-        return $state
-    }
+    set mana_spent [lindex $state 0]
+    set hero_mana [lindex $state 1]
+    set hero_hp [lindex $state 2]
+    set hero_armor [lindex $state 3] 
+    set boss_hp [lindex $state 4]
+    set effects [lindex $state 5]
+    set spells [lindex $state 6]
 
-    append_effect state poison 6
-    set_battle_status state ok
-    return $state
+    # Return new state
+    return [list $mana_spent $hero_mana $hero_hp $hero_armor $boss_hp [list {poison 6} {*}$effects] [list poison {*}$spells]]
 }
 
 proc recharge {state} {
-    if {[get_hero_mana $state] < 229} {
-        set_battle_status state loss
-        return $state
-    }
-    incr_hero_mana state -229
-    incr_mana_spent state 229
-
+    # Spend mana on spell
+    set mana_spent [lindex $state 0]
+    set hero_mana [lindex $state 1]
+    incr mana_spent 229
+    incr hero_mana -229
+    set state [list $mana_spent $hero_mana {*}[lrange $state 2 end]]
+    
+    # Apply effects
     set state [apply_effects $state]
 
-    if {[get_boss_hp $state] <= 0} {
-        set_battle_status state win
-        return $state
-    }
-     
-    if {[spell_is_active recharge [get_effects $state]]} {
-        set_battle_status state loss
-        return $state
-    }
+    set mana_spent [lindex $state 0]
+    set hero_mana [lindex $state 1]
+    set hero_hp [lindex $state 2]
+    set hero_armor [lindex $state 3] 
+    set boss_hp [lindex $state 4]
+    set effects [lindex $state 5]
+    set spells [lindex $state 6]
 
-    append_effect state recharge 5
-    set_battle_status state ok
-    return $state
+    # Return new state
+    return [list $mana_spent $hero_mana $hero_hp $hero_armor $boss_hp [list {recharge 5} {*}$effects] [list recharge {*}$spells]]
 }
 
-proc boss_attack {state} {
-    set state [apply_effects $state]
+proc spell_ok {spell state min_mana} {
+    set mana_spent [lindex $state 0]
+    set hero_mana [lindex $state 1]
+    set spell_name [lindex $spell 0]
+    set spell_cost [lindex $spell 1]
 
-    if {[get_boss_hp $state] <= 0} {
-        set_battle_status state win
-        return $state
+    if {$spell_cost > $hero_mana} { 
+        log "Not enough hero mana to cast $spell_name : $state\n"
+        return 0 
     }
 
-    set boss_dmg0 [::tcl::mathfunc::max 1 [expr {[get_boss_dmg $state] - [get_hero_armor $state]}]]
-    incr_hero_hp state -$boss_dmg0
-
-    if {[get_hero_hp $state] <= 0} {
-        set_battle_status state loss
-        return $state
+    incr mana_spent $spell_cost
+    if {$mana_spent >= $min_mana} { 
+        return 0 
     }
 
-    set_battle_status state ok
-    return $state
+    set effects [lindex $state 5]
+    foreach effect $effects {
+        set effect_name [lindex $effect 0]
+        set effect_timer [lindex $effect 1]
+        if {$effect_name == $spell_name && $effect_timer > 1} { 
+            log "$spell_name already in effect: $state\n"
+            return 0 
+        }
+    }
+    return 1
 }
 
-proc solve_part1 {} {
-    set spells {{magic_missile 53} {drain 73} {shield 113} {poison 173} {recharge 229}}
+proc solve_part1 {boss_hp boss_dmg hero_hp hero_mana} {
+    # State {mana_spent hero_mana hero_hp hero_armor boss_hp effects history}
+    set state [list 0 $hero_mana $hero_hp 0 $boss_hp {} {}]
     set min_mana 1000000
-    set queue [list [init_state]]
+
+    set tick 0
+    set queue [list $state]
     set new_queue {}
 
-    set ticks 0
-    while {$ticks < 1000} {
-        incr ticks
-        puts "****** TICKS $ticks :: [llength $queue] :: $min_mana ******"
+    set spell_list [list {magic_missile 53} {drain 73} {shield 113} {poison 173} {recharge 229}]
+
+    while {[llength $queue] > 0} {
+        incr tick
+        puts "Tick $tick : [llength $queue]"
+
         foreach state $queue {
-            
-            if {[get_mana_spent $state] > $min_mana} { continue }
 
-            foreach spell_data $spells {
-                set spell [lindex $spell_data 0]
-                set mana [lindex $spell_data 1]
+            foreach spell $spell_list {
 
-                # Hero Turn
-                set state0 [$spell $state]
-                # puts "Hero casting $spell_data :: $state --> $state0"
-                set status [get_battle_status $state0]
-                if {$status == "win"} {
-                    set min_mana [::tcl::mathfunc::min $min_mana [get_mana_spent $state0]]
-                    puts "setting min_mana $min_mana"
-                    continue
-                } elseif {$status == "loss"} {
+                # Can this attack be made?
+                if {![spell_ok $spell $state $min_mana]} {
                     continue
                 }
+                
+                set spell_name [lindex $spell 0]
+                set spell_cost [lindex $spell 1]
 
-                # Boss Turn
-                set state1 [boss_attack $state0]
-                # puts "Boss attacks : $state0 --> $state1"
-                set status [get_battle_status $state1]
-                if {$status == "win"} {
-                    set min_mana [::tcl::mathfunc::min $min_mana [get_mana_spent $state1]]
-                    puts "setting min_mana $min_mana"
+
+                # Hero Attack
+                log "Hero cast $spell_name from $state"
+                set state0 [$spell_name $state]
+
+                # Boss Dead?
+                if {[lindex $state0 4] <= 0} {
+                    set min_mana [::tcl::mathfunc::min $min_mana [lindex $state0 0]]
+                    log "Win!!! $min_mana"
+                    log "Hero cast $spell_name to $state0\n"
                     continue
-                } elseif {$state1 == "loss"} {
-                    continue
-                } elseif {[get_mana_spent $state1] < $min_mana} {
-                    lappend new_queue $state1
                 }
+                # Hero dead?
+                if {[lindex $state0 2] <= 0} { 
+                    log "Loss..."
+                    log "Hero cast $spell_name to $state0\n"
+                    continue
+                }
+                log "Hero cast $spell_name to $state0"
+
+                # Boss Attack
+                log "Boss attack from $state0"
+                set state1 [boss_attack $boss_dmg $state0]
+                # Boss Dead?
+                if {[lindex $state1 4] <= 0} {
+                    set min_mana [::tcl::mathfunc::min $min_mana [lindex $state0 0]]
+                    log "Win!!! $min_mana"
+                    log "Boss attack to $state1\n"
+                    continue
+                }
+                # Hero dead?
+                if {[lindex $state1 2] <= 0} { 
+                    log "Loss..."
+                    log "Boss attack to $state1\n"
+                    continue
+                }
+                log "Boss attack to $state1\n"
+
+                # Enqueue
+                lappend new_queue $state1
             }
         }
 
-        if {[llength $new_queue] == 0} {
-            return $min_mana
-        }
-
-        set queue {}
         set queue $new_queue
         set new_queue {}
-    }
-}
 
-proc play {boss_hp boss_dmg hero_hp hero_mana spell_list} {
-    set state [play_state $boss_hp $boss_dmg $hero_hp $hero_mana]
-    foreach spell $spell_list {
-        set state0 [$spell $state]
-        puts "Hero cast $spell: $state --> $state0"
-        set state1 [boss_attack $state0]
-        puts "Boss attack: $state0 --> $state1"
-        set state $state1
     }
+    return $min_mana
 }
 
 if {!$tcl_interactive} {
-    puts [solve_part1]
+    puts [solve_part1 71 10 50 500]
 }
