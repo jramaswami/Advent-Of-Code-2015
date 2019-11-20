@@ -6,12 +6,6 @@ package require struct::stack
 
 set VERBOSE 0
 
-proc log {msg} {
-    if {$::VERBOSE} {
-        puts $msg
-    }
-}
-
 proc apply_effects {state} {
     set mana_spent [lindex $state 0]
     set hero_mana [lindex $state 1]
@@ -27,13 +21,10 @@ proc apply_effects {state} {
         set effect_timer [lindex $effect 1]
 
         if {$effect_name == "shield"} {
-            log "Hero armor +7 ..."
             incr hero_armor 7
         } elseif {$effect_name == "poison"} {
-            log "Boss hp -3 ..."
             incr boss_hp -3
         } elseif {$effect_name == "recharge"} {
-            log "Hero mana +101 ..."
             incr hero_mana 101
         }
         incr effect_timer -1
@@ -65,7 +56,6 @@ proc boss_attack {boss_dmg state} {
 
     # Effective damage
     set boss_dmg0 [::tcl::mathfunc::max 1 [expr {$boss_dmg - $hero_armor}]]
-    log "Hero hp -$boss_dmg0"
     incr hero_hp -$boss_dmg0
 
     # Return new state
@@ -92,7 +82,6 @@ proc magic_missile {state} {
     set spells [lindex $state 6]
 
     # Damage to boss
-    log "Boss hp -4 ..."
     incr boss_hp -4
 
     # Return new state
@@ -119,7 +108,6 @@ proc drain {state} {
     set spells [lindex $state 6]
 
     # Damage to boss, heal hero
-    log "Boss hp -2, hero hp +2"
     incr boss_hp -2
     incr hero_hp 2
 
@@ -203,7 +191,6 @@ proc spell_ok {spell state min_mana} {
     set spell_cost [lindex $spell 1]
 
     if {$spell_cost > $hero_mana} { 
-        log "Not enough hero mana to cast $spell_name : $state\n"
         return 0 
     }
 
@@ -217,14 +204,13 @@ proc spell_ok {spell state min_mana} {
         set effect_name [lindex $effect 0]
         set effect_timer [lindex $effect 1]
         if {$effect_name == $spell_name && $effect_timer > 1} { 
-            log "$spell_name already in effect: $state\n"
             return 0 
         }
     }
     return 1
 }
 
-proc solve_part1 {boss_hp boss_dmg hero_hp hero_mana} {
+proc solve {boss_hp boss_dmg hero_hp hero_mana {hard_mode 0}} {
     # State {mana_spent hero_mana hero_hp hero_armor boss_hp effects history}
     set state [list 0 $hero_mana $hero_hp 0 $boss_hp {} {}]
     set min_mana 1000000
@@ -237,9 +223,16 @@ proc solve_part1 {boss_hp boss_dmg hero_hp hero_mana} {
 
     while {[llength $queue] > 0} {
         incr tick
-        puts "Tick $tick : [llength $queue]"
+        # puts "Tick $tick : [llength $queue]"
 
         foreach state $queue {
+
+            if {$hard_mode} {
+                if {[lindex $state 2] < 2} {
+                    continue
+                }
+                lset state 2 [expr {[lindex $state 2] - 1}]
+            }
 
             foreach spell $spell_list {
 
@@ -253,41 +246,29 @@ proc solve_part1 {boss_hp boss_dmg hero_hp hero_mana} {
 
 
                 # Hero Attack
-                log "Hero cast $spell_name from $state"
                 set state0 [$spell_name $state]
 
                 # Boss Dead?
                 if {[lindex $state0 4] <= 0} {
                     set min_mana [::tcl::mathfunc::min $min_mana [lindex $state0 0]]
-                    log "Win!!! $min_mana"
-                    log "Hero cast $spell_name to $state0\n"
                     continue
                 }
                 # Hero dead?
                 if {[lindex $state0 2] <= 0} { 
-                    log "Loss..."
-                    log "Hero cast $spell_name to $state0\n"
                     continue
                 }
-                log "Hero cast $spell_name to $state0"
 
                 # Boss Attack
-                log "Boss attack from $state0"
                 set state1 [boss_attack $boss_dmg $state0]
                 # Boss Dead?
                 if {[lindex $state1 4] <= 0} {
                     set min_mana [::tcl::mathfunc::min $min_mana [lindex $state0 0]]
-                    log "Win!!! $min_mana"
-                    log "Boss attack to $state1\n"
                     continue
                 }
                 # Hero dead?
                 if {[lindex $state1 2] <= 0} { 
-                    log "Loss..."
-                    log "Boss attack to $state1\n"
                     continue
                 }
-                log "Boss attack to $state1\n"
 
                 # Enqueue
                 lappend new_queue $state1
@@ -302,5 +283,6 @@ proc solve_part1 {boss_hp boss_dmg hero_hp hero_mana} {
 }
 
 if {!$tcl_interactive} {
-    puts [solve_part1 71 10 50 500]
+    puts "The solution to part 1 is [solve 71 10 50 500]."
+    puts "The solution to part 2 is [solve 71 10 50 500 1]."
 }
